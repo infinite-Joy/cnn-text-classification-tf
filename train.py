@@ -18,6 +18,7 @@ tf.flags.DEFINE_string("positive_data_file", "./data/rt-polaritydata/rt-polarity
 tf.flags.DEFINE_string("negative_data_file", "./data/rt-polaritydata/rt-polarity.neg", "Data source for the negative data.")
 
 # Model Hyperparameters
+tf.flags.DEFINE_string("word2vec", None, "Word2vec file with pre-trained embeddings (default: None)")
 tf.flags.DEFINE_integer("embedding_dim", 128, "Dimensionality of character embedding (default: 128)")
 tf.flags.DEFINE_string("filter_sizes", "3,4,5", "Comma-separated filter sizes (default: '3,4,5')")
 tf.flags.DEFINE_integer("num_filters", 128, "Number of filters per filter size (default: 128)")
@@ -138,6 +139,32 @@ def train(x_train, y_train, vocab_processor, x_dev, y_dev):
 
             # Initialize all variables
             sess.run(tf.global_variables_initializer())
+
+            if FLAGS.word2vec:
+                # initial matrix with random uniform
+                initW = np.random.uniform(-0.25,0.25,(len(vocab_processor.vocabulary_), FLAGS.embedding_dim))
+                # load any vectors from the word2vec
+                print("Load word2vec file {}\n".format(FLAGS.word2vec))
+                with open(FLAGS.word2vec, "rb") as f:
+                    header = f.readline()
+                    vocab_size, layer1_size = map(int, header.split())
+                    binary_len = np.dtype('float32').itemsize * layer1_size
+                    for line in xrange(vocab_size):
+                        word = []
+                        while True:
+                            ch = f.read(1)
+                            if ch == ' ':
+                                word = ''.join(word)
+                                break
+                            if ch != '\n':
+                                word.append(ch)
+                        idx = vocab_processor.vocabulary_.get(word)
+                        if idx != 0:
+                            initW[idx] = np.fromstring(f.read(binary_len), dtype='float32')
+                        else:
+                            f.read(binary_len)
+
+                sess.run(cnn.W.assign(initW))
 
             def train_step(x_batch, y_batch):
                 """
