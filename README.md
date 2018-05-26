@@ -19,6 +19,8 @@ Print parameters:
 ```
 optional arguments:
   -h, --help            show this help message and exit
+  --word2vec      word2vec
+			file of the word embedding file
   --embedding_dim EMBEDDING_DIM
                         Dimensionality of character embedding (default: 128)
   --filter_sizes FILTER_SIZES

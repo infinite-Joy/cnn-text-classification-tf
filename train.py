@@ -149,7 +149,7 @@ def train(x_train, y_train, vocab_processor, x_dev, y_dev):
                     header = f.readline()
                     vocab_size, layer1_size = map(int, header.split())
                     binary_len = np.dtype('float32').itemsize * layer1_size
-                    for line in xrange(vocab_size):
+                    for line in range(vocab_size):
                         word = []
                         while True:
                             ch = f.read(1)
